@@ -1,57 +1,66 @@
-# Déploiement NFE RH sur Koyeb (gratuit)
+# NFE RH - Instructions pour l'agent
 
-## 1. Créer un compte Koyeb
+## Dépôt GitHub
+https://github.com/NaoussiLionel/nfe-rh (branche `main`)
 
-Va sur https://app.koyeb.com et inscris-toi avec GitHub.
+## Project Overview
+HR dashboard SPA with WhatsApp-based time tracking (In/Out), SQLite persistence, configurable shift hours, weekly/monthly/yearly analysis. Built with Node.js/Express/SQLite/Baileys v7/Chart.js.
 
-## 2. Forker / cloner le dépôt
+## Current State
+- Dashboard + 6 tabs (Performance, Discipline, Charge, Analyse, Employés)
+- WhatsApp bot reads "In"/"Out" messages silently, records time entries
+- SQLite with 3 tables: `pointages` (time entries), `mappings` (WhatsApp name → employee name), `config` (shiftStart, shiftEnd)
+- 480 rows sample data (4 employees, Jul 2025 - Jun 2026)
+- Automatic weekly reports (Friday 15:00) and monthly reports (26th 15:00) sent to user's WhatsApp
+- QR code displayed in browser for WhatsApp authentication (admin > Connexion WhatsApp)
+- All brand colors extracted from logo: primary `#1a1a8a`, accent `#00C8FF`
+- Reports include late warnings (≥3/week, ≥5/month), punctuality congratulations, OT master + burnout risk
 
-Ce dépôt GitHub : `https://github.com/NaoussiLionel/nfe-rh`
+## Key Files
+- `server.js` — Express backend (592 lines): all API routes, WhatsApp connection, report generators, cron jobs
+- `public/index.html` — SPA frontend (~1070 lines): all UI, Chart.js graphs, admin modal with WhatsApp QR
+- `Dockerfile` — Node 18 Alpine, exposes 3000, uses `DATA_DIR` env var
+- `koyeb.yaml` — Koyeb deployment config with volume at `/data`
 
-## 3. Déployer sur Koyeb
+## Environment Variables
+- `DATA_DIR` — path for persistent storage (DB + WhatsApp auth), defaults to `.`
+- `PORT` — server port, defaults to 3000
 
-### Méthode simple (via Dashboard) :
+## What Needs to Be Done
+### 1. Deploy on Koyeb
+1. Go to https://app.koyeb.com → sign up with GitHub
+2. Create App → GitHub → `NaoussiLionel/nfe-rh`
+3. Builder: Dockerfile, Port: 3000
+4. Add volume: name `data`, mount path `/data`, 1GB
+5. Add env var: `DATA_DIR=/data`
+6. Deploy
 
-1. Connecte-toi sur https://app.koyeb.com
-2. Clique **"Create App"**
-3. Choisis **"GitHub"** comme source
-4. Sélectionne le dépôt `NaoussiLionel/nfe-rh`
-5. **Builder** : `Dockerfile` (automatique)
-6. **Port** : `3000`
-7. **App name** : `nfe-rh`
-8. **Region** : `Frankfurt (fra)` (le plus proche)
+### 2. After Deployment
+1. Open the Koyeb URL
+2. Go to ⚙️ > Connexion WhatsApp → scan QR code with WhatsApp
+3. Test by sending "In" / "Out" from WhatsApp
+4. Verify the dashboard shows data
 
-### Ajouter un volume persistant (obligatoire pour la DB + WhatsApp) :
+### 3. Possible Improvements (Future)
+- CSV export of time entries
+- WhatsApp notification when admin sends reports
+- More employees via the mapping interface
+- Role-based access (admin vs viewer)
+- Add cloud DB option (Turso) for multi-instance deployment
 
-1. Dans l'onglet **"Volumes"** du service :
-   - Clique **"Add Volume"**
-   - Nom : `data`
-   - Mount path : `/data`
-   - Size : `1 GB` (suffisant)
-2. Ajouter une variable d'environnement :
-   - `DATA_DIR` → `/data`
+## Technical Details
+- WhatsApp auth stored in `{DATA_DIR}/auth_info/`
+- SQLite DB stored at `{DATA_DIR}/rh.db`
+- Server auto-creates `DATA_DIR` if it doesn't exist
+- Cron auto-closes open OUT at 23:59 using configured shift end time
+- Browser caching defeated via `Cache-Control: no-store` + timestamp query param
+- QR code captured from Baileys `connection.update` event and served via `/api/whatsapp/status`
+- Frontend polls `/api/whatsapp/status` every 3s when showing QR page
+- Uses `qrcode.js` CDN library to render QR in browser
 
-### Déployer
-
-Clique **"Create App"** et attends le build (2-3 min).
-
-## 4. Connecter WhatsApp
-
-1. Ouvre l'URL donnée par Koyeb (ex: `https://nfe-rh.koyeb.app`)
-2. Clique sur la roue dentée ⚙️ en haut à droite
-3. Va dans l'onglet **"Connexion WhatsApp"**
-4. Scanne le QR code avec WhatsApp (WhatsApp > Menu > Appareils liés > Lier un appareil)
-5. Une fois connecté, le statut passe en vert ✅
-
-## 5. Utilisation
-
-- Envoie **"In"** ou **"Out"** sur WhatsApp pour pointer
-- Le tableau de bord se met à jour automatiquement
-- Les rapports hebdo (vendredi 15h) et mensuel (26 du mois) arrivent sur ton WhatsApp
-
-## Rappels
-
-- `npm start` lance le serveur en local (port 3000)
-- La base de données et l'auth WhatsApp sont persistées via le volume `/data`
-- Tu peux tester les pointages depuis Admin > Simulation test
-- Les horaires de service se configurent dans Admin > Configuration
+## Local Development
+```bash
+npm install
+npm start
+# Server on http://localhost:3000
+```
