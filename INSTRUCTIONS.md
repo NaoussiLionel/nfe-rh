@@ -20,33 +20,96 @@ HR dashboard SPA with WhatsApp-based time tracking (In/Out), SQLite persistence,
 - `server.js` — Express backend (592 lines): all API routes, WhatsApp connection, report generators, cron jobs
 - `public/index.html` — SPA frontend (~1070 lines): all UI, Chart.js graphs, admin modal with WhatsApp QR
 - `Dockerfile` — Node 18 Alpine, exposes 3000, uses `DATA_DIR` env var
-- `koyeb.yaml` — Koyeb deployment config with volume at `/data`
+- `koyeb.yaml` — Koyeb deployment config with volume at `/data` (optional, not used)
 
 ## Environment Variables
 - `DATA_DIR` — path for persistent storage (DB + WhatsApp auth), defaults to `.`
 - `PORT` — server port, defaults to 3000
 
-## What Needs to Be Done
-### 1. Deploy on Koyeb
-1. Go to https://app.koyeb.com → sign up with GitHub
-2. Create App → GitHub → `NaoussiLionel/nfe-rh`
-3. Builder: Dockerfile, Port: 3000
-4. Add volume: name `data`, mount path `/data`, 1GB
-5. Add env var: `DATA_DIR=/data`
-6. Deploy
+## Deployment on Old Android Phone (recommended)
 
-### 2. After Deployment
-1. Open the Koyeb URL
-2. Go to ⚙️ > Connexion WhatsApp → scan QR code with WhatsApp
-3. Test by sending "In" / "Out" from WhatsApp
-4. Verify the dashboard shows data
+### Prerequisites
+- Old Android phone (Android 7+)
+- WiFi or mobile data (constant connection)
+- Power supply (keep plugged in)
 
-### 3. Possible Improvements (Future)
-- CSV export of time entries
-- WhatsApp notification when admin sends reports
-- More employees via the mapping interface
-- Role-based access (admin vs viewer)
-- Add cloud DB option (Turso) for multi-instance deployment
+### Step 1: Install Termux
+1. Install **F-Droid** from https://f-droid.org/
+2. Search and install **Termux** from F-Droid (NOT from Google Play Store — Play Store version is outdated)
+3. Open Termux
+
+### Step 2: Install Dependencies in Termux
+Run these commands in Termux:
+
+```bash
+# Update packages
+pkg update && pkg upgrade -y
+
+# Install Node.js and git
+pkg install nodejs git -y
+
+# Verify
+node --version
+npm --version
+```
+
+### Step 3: Clone and Setup the App
+```bash
+# Clone the repository
+git clone https://github.com/NaoussiLionel/nfe-rh.git
+cd nfe-rh
+
+# Install dependencies
+npm install
+
+# Start the server
+npm start
+```
+
+### Step 4: Access the Dashboard
+- On the phone itself: open Chrome → `http://localhost:3000`
+- To access from your PC/other devices, continue to Step 5
+
+### Step 5: Expose via Cloudflare Tunnel (optional, for external access)
+```bash
+# Install cloudflared in Termux
+pkg install cloudflared -y
+
+# Run tunnel (in a new Termux session or background)
+cloudflared tunnel --url http://localhost:3000
+```
+This gives you a public URL like `https://something.trycloudflare.com`
+Access this URL from your PC or any device to see the dashboard.
+
+### Step 6: Connect WhatsApp
+1. Open the dashboard URL
+2. Click ⚙️ > Connexion WhatsApp
+3. Scan the QR code with WhatsApp (WhatsApp > Menu > Appareils liés > Lier un appareil)
+4. Once connected, status shows ✅
+
+### Step 7: Keep the App Running 24/7
+To prevent Termux from being killed by Android:
+- Enable **"Keep screen on"** while charging (Developer Options)
+- Or use **Termux:Boot** (install from F-Droid) to auto-start on boot
+- Or use **Termux:Widget** for easy start/stop
+- Disable battery optimization for Termux (Settings > Apps > Termux > Battery > Unrestricted)
+
+### Step 8: Keep Termux Running in Background
+```bash
+# Use tmux to keep process alive even if terminal closes
+pkg install tmux -y
+tmux new -s nfe
+npm start
+# Detach with Ctrl+B then D
+# Reattach with: tmux attach -t nfe
+```
+
+## Usage
+- Send **"In"** / **"Out"** on WhatsApp to clock in/out
+- Dashboard refreshes every 5 seconds
+- Weekly report: Friday 15:00 (auto)
+- Monthly report: 26th 15:00 (auto)
+- Manual report: ⚙️ > Simulation > Rapport semaine/mois
 
 ## Technical Details
 - WhatsApp auth stored in `{DATA_DIR}/auth_info/`
@@ -58,7 +121,7 @@ HR dashboard SPA with WhatsApp-based time tracking (In/Out), SQLite persistence,
 - Frontend polls `/api/whatsapp/status` every 3s when showing QR page
 - Uses `qrcode.js` CDN library to render QR in browser
 
-## Local Development
+## Local Development (PC)
 ```bash
 npm install
 npm start
