@@ -453,6 +453,7 @@ select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)
 <div class="admin-dropdown" id="adminDropdown">
 <button onclick="adminAction('mapping')">&#128279; Mapping WhatsApp</button>
 <button onclick="adminAction('config')">&#9881; Configuration</button>
+<button onclick="adminAction('whatsapp')">&#128242; Connexion WhatsApp</button>
 <button onclick="adminAction('test')">&#128736; Simulation test</button>
 </div>
 </div>
@@ -586,6 +587,7 @@ select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)
 <div class="admin-tabs">
 <button id="adm-mapping" class="sel" onclick="adminTab('mapping')">Mapping</button>
 <button id="adm-config" onclick="adminTab('config')">Configuration</button>
+<button id="adm-whatsapp" onclick="adminTab('whatsapp')">WhatsApp</button>
 <button id="adm-test" onclick="adminTab('test')">Simulation</button>
 </div>
 <div id="adm-section-mapping" class="admin-section sel">
@@ -606,6 +608,23 @@ select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)
 </div>
 <button class="btn btn-primary" onclick="saveConfig()" style="width:100%;justify-content:center">Sauvegarder</button>
 <div id="configMsg" class="msg"></div>
+</div>
+<div id="adm-section-whatsapp" class="admin-section">
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:12px">Connecte ton WhatsApp pour le pointage automatique.</p>
+<div id="waStatus" style="text-align:center;padding:20px">
+<div class="skeleton" style="height:40px;width:200px;margin:0 auto"></div>
+</div>
+<div id="waQr" style="display:none;text-align:center">
+<p style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:10px">Scanne ce QR code avec WhatsApp</p>
+<div id="qrcode" style="display:inline-block;background:#fff;padding:12px;border-radius:12px;border:1px solid var(--border)"></div>
+<p style="font-size:12px;color:var(--text-muted);margin-top:10px">WhatsApp > Menu > Appareils liés > Lier un appareil</p>
+</div>
+<div id="waConnected" style="display:none;text-align:center;padding:20px">
+<div style="font-size:48px;margin-bottom:8px">✅</div>
+<p style="font-size:16px;font-weight:700;color:var(--success)">WhatsApp connecte</p>
+<p id="waJid" style="font-size:12px;color:var(--text-muted);margin-top:4px"></p>
+</div>
+<div id="waMsg" class="msg"></div>
 </div>
 <div id="adm-section-test" class="admin-section">
 <div style="margin-bottom:12px">
@@ -632,6 +651,7 @@ select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const MEDALS = { GOLD: '\u{1F947}', SILVER: '\u{1F948}', BRONZE: '\u{1F949}', NI: '' };
 const MEDAL_CLS = { GOLD: 'medal gold', SILVER: 'medal silver', BRONZE: 'medal bronze', NI: '' };
@@ -910,19 +930,66 @@ function adminAction(section) {
 
 function closeAdmin() {
   document.getElementById('adminModal').classList.remove('sel');
+  if (waPollInterval) { clearInterval(waPollInterval); waPollInterval = null; }
+  waQRGenerated = false;
 }
 
 let adminCurrentTab = 'mapping';
 
 function adminTab(t) {
   adminCurrentTab = t;
-  ['adm-mapping','adm-config','adm-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  ['adm-mapping','adm-config','adm-whatsapp','adm-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
   document.getElementById('adm-' + t).classList.add('sel');
-  ['adm-section-mapping','adm-section-config','adm-section-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  ['adm-section-mapping','adm-section-config','adm-section-whatsapp','adm-section-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
   document.getElementById('adm-section-' + t).classList.add('sel');
   if (t === 'mapping') loadMap();
   else if (t === 'config') loadConfigTest();
+  else if (t === 'whatsapp') loadWAStatus();
 }
+
+let waQRGenerated = false;
+let waPollInterval = null;
+
+async function loadWAStatus() {
+  const d = await g('/api/whatsapp/status');
+  if (!d) return;
+  const status = document.getElementById('waStatus');
+  const qrDiv = document.getElementById('waQr');
+  const connectedDiv = document.getElementById('waConnected');
+  const jidP = document.getElementById('waJid');
+  if (d.connected) {
+    status.style.display = 'none';
+    qrDiv.style.display = 'none';
+    connectedDiv.style.display = 'block';
+    jidP.textContent = 'Numero: ' + (d.jid || '--');
+    if (waPollInterval) { clearInterval(waPollInterval); waPollInterval = null; }
+  } else if (d.qr) {
+    status.style.display = 'none';
+    connectedDiv.style.display = 'none';
+    qrDiv.style.display = 'block';
+    if (!waQRGenerated) {
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), { text: d.qr, width: 220, height: 220 });
+      waQRGenerated = true;
+    }
+    if (!waPollInterval) {
+      waPollInterval = setInterval(loadWAStatus, 3000);
+    }
+  } else {
+    qrDiv.style.display = 'none';
+    connectedDiv.style.display = 'none';
+    status.style.display = 'block';
+    status.innerHTML = '<p style="color:var(--text-muted)">En attente du QR code...</p><div class="skeleton" style="height:40px;width:200px;margin:10px auto"></div>';
+    if (!waPollInterval) {
+      waPollInterval = setInterval(loadWAStatus, 3000);
+    }
+  }
+}
+
+document.getElementById('adminModal').addEventListener('hidden', function() {
+  if (waPollInterval) { clearInterval(waPollInterval); waPollInterval = null; }
+  waQRGenerated = false;
+});
 
 async function loadMap() {
   const [names, mappings, ranking] = await Promise.all([

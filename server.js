@@ -6,7 +6,8 @@ const cron = require('node-cron');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+const dataDir = process.env.DATA_DIR || '.';
 app.use(express.json());
 app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 app.get('/', (req, res) => {
@@ -19,7 +20,9 @@ app.get('/', (req, res) => {
 });
 app.use(express.static('public', { setHeaders: (res, p) => { if (p.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, private'); } }));
 
-const db = new sqlite3.Database('./rh.db');
+const fs = require('fs');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+const db = new sqlite3.Database(path.join(dataDir, 'rh.db'));
 let shiftStart = '09:00';
 let shiftEnd = '18:00';
 let shiftStartMinutes = 540;
@@ -94,10 +97,11 @@ const logger = pino({ level: 'warn' });
 let whatsAppSocket = null;
 let whatsAppJid = null;
 let whatsAppConnected = false;
+let currentQR = null;
 
 async function connecterWhatsApp() {
     try {
-        const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+        const { state, saveCreds } = await useMultiFileAuthState(path.join(dataDir, 'auth_info'));
         const sock = makeWASocket({
             auth: state,
             browser: Browsers.ubuntu('Chrome'),
@@ -110,6 +114,7 @@ async function connecterWhatsApp() {
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect, qr } = update;
             if (qr && !pairingTried) {
+                currentQR = qr;
                 console.log('Scan QR code with WhatsApp');
                 try {
                     const QRCode = require('qrcode-terminal');
@@ -315,7 +320,7 @@ app.get('/api/analysis/yearly', (req, res) => {
 });
 
 app.get('/api/whatsapp/status', (req, res) => {
-    res.json({ connected: whatsAppConnected });
+    res.json({ connected: whatsAppConnected, qr: currentQR, jid: whatsAppJid });
 });
 
 app.get('/api/config', (req, res) => {
