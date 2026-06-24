@@ -1,0 +1,6 @@
+node_modules/
+auth_info/
+rh.db
+server_err.log
+server_out.log
+npm-debug.log*

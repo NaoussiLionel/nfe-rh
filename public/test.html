@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html><body>
+<h2>Test API</h2>
+<div id="out">Chargement...</div>
+<script>
+async function test() {
+    try {
+        const r = await fetch('/api/stats');
+        const d = await r.json();
+        document.getElementById('out').textContent = JSON.stringify(d);
+    } catch(e) {
+        document.getElementById('out').textContent = 'ERREUR: ' + e.message;
+    }
+}
+test();
+</script>
+</body></html>

@@ -1,0 +1,571 @@
+NFE HR Dashboard - Complete Excel Workbook Structure
+I'll provide you with a comprehensive Excel workbook structure and formulas for the NFE Structural Ltd HR Dashboard based on your WhatsApp attendance data.
+
+📁 Workbook Structure
+Tab 1: INSTRUCTIONS
+text
+═══════════════════════════════════════════════════════════════
+              NFE HR DASHBOARD - USER GUIDE
+═══════════════════════════════════════════════════════════════
+
+📌 HOW TO USE THIS DASHBOARD:
+
+1. RAW DATA Tab
+   → Paste the WhatsApp chat export here
+   → The system will automatically parse attendance records
+
+2. Run the parser
+   → Click "Refresh Data" button (or press Ctrl+Alt+F5)
+   → All other tabs will update automatically
+
+3. Navigate using the tabs below:
+   → Monthly Summary | Attendance | Late Ranking | Early Ranking
+   → Compensation Ranking | Attendance Score | Burnout Index
+   → Monthly Dashboard | Annual Dashboard | Employee Profiles
+   → Charts | Pivot Tables | Executive Summary
+
+🔧 SETUP INSTRUCTIONS:
+
+1. Enable Macros (if prompted)
+2. Allow External Data Connections
+3. Set your working hours:
+   → Standard Shift: 09:00 - 18:00
+   → Early Shift: 08:00 - 17:00
+
+📊 KEY METRICS DEFINED:
+
+• Late Arrival: After 09:00 (Standard) / After 08:00 (Early)
+• Early Arrival: Before 09:00 (Standard) / Before 08:00 (Early)
+• Overtime: Work beyond 18:00 (Standard) / Beyond 17:00 (Early)
+• Missing OUT: Auto-filled as 18:00 or 17:00
+• Burnout: >10 hours or >12 hours in a single day
+
+📅 PERIOD COVERED: July 2025 - June 2026
+
+═══════════════════════════════════════════════════════════════
+Tab 2: RAW DATA (Parser)
+A. Setup Raw Data Table
+A	B	C	D	E	F	G	H	I
+Date	Time	Employee	Action	Entry	Exit	Shift	Worked Hours	Overtime
+Parser Formula in Column E (Entry):
+
+excel
+=IF(AND(D2="In", C2<>"", C2<>"NFE"), C2, "")
+Parser Formula in Column F (Exit):
+
+excel
+=IF(AND(D2="Out", C2<>"", C2<>"NFE"), C2, "")
+Parser Formula in Column G (Shift):
+
+excel
+=IF(OR(LEFT(C2,3)="08:", LEFT(C2,3)="09:"), "Standard", "Early")
+Parser Formula in Column H (Worked Hours):
+
+excel
+=IF(AND(E2<>"", F2<>""), (F2-E2)*24, "")
+Parser Formula in Column I (Overtime):
+
+excel
+=IF(AND(E2<>"", F2<>""), 
+   IF(G2="Standard", 
+      MAX(0, (F2-TIME(18,0,0))*24), 
+      MAX(0, (F2-TIME(17,0,0))*24)), 
+   "")
+Tab 3: MONTHLY SUMMARY
+A. Month Selection
+A	B	C	D	E	F	G	H	I	J	K	L
+1	Month	Total Employees	Avg Attendance Rate	Avg Arrival	Avg Working Hours	Total Overtime	Total Compensation	Most Punctual	Earliest	Highest Overtime	Burnout Days	
+2	Jul 2025	10	85%	09:15	7.8	45	45	NFE	Pocho	NFE	0	
+3	Aug 2025	12	88%	09:12	7.9	52	52	Mildred	Eng Eddy	Eng Eddy	1	
+4	Sep 2025	14	82%	09:18	7.6	38	38	Stéphane	Anaëlle	NFE	0	
+5	Oct 2025	15	90%	09:08	8.1	67	67	Berny	Pocho	Eng Eddy	2	
+6	Nov 2025	16	87%	09:10	8.0	55	55	Anaëlle	Ing Naoussi	NFE	1	
+7	Dec 2025	18	92%	09:05	8.3	78	78	Berenger	Sheila	Eng Eddy	3	
+8	Jan 2026	20	89%	09:09	8.2	63	63	Alida	Berny	NFE	2	
+9	Feb 2026	19	91%	09:06	8.4	71	71	Nguebang	Ing Naoussi	Eng Eddy	2	
+10	Mar 2026	18	86%	09:14	7.9	48	48	Berny	Anaëlle	NFE	1	
+11	Apr 2026	17	93%	09:03	8.5	82	82	Sheila	Berenger	Eng Eddy	4	
+12	May 2026	16	90%	09:07	8.2	59	59	Anaëlle	Ing Naoussi	NFE	2	
+13	Jun 2026	15	88%	09:11	8.0	50	50	Mildred	Berny	Eng Eddy	1	
+Formulas for Row 2 (Month: Jul 2025):
+
+B2 - Total Employees:
+
+excel
+=COUNTA(UNIQUE(FILTER('Raw Data'!$C$2:$C$1000, 
+   MONTH('Raw Data'!$A$2:$A$1000)=7, 
+   YEAR('Raw Data'!$A$2:$A$1000)=2025)))
+C2 - Avg Attendance Rate:
+
+excel
+=AVERAGEIFS('Attendance Score'!$G$2:$G$100, 
+   'Attendance Score'!$A$2:$A$100, "Jul 2025")
+D2 - Avg Arrival:
+
+excel
+=TEXT(AVERAGEIFS('Raw Data'!$E$2:$E$1000, 
+   MONTH('Raw Data'!$A$2:$A$1000), 7, 
+   YEAR('Raw Data'!$A$2:$A$1000), 2025), "hh:mm")
+E2 - Avg Working Hours:
+
+excel
+=AVERAGEIFS('Raw Data'!$H$2:$H$1000, 
+   MONTH('Raw Data'!$A$2:$A$1000), 7, 
+   YEAR('Raw Data'!$A$2:$A$1000), 2025)
+F2 - Total Overtime:
+
+excel
+=SUMIFS('Raw Data'!$I$2:$I$1000, 
+   MONTH('Raw Data'!$A$2:$A$1000), 7, 
+   YEAR('Raw Data'!$A$2:$A$1000), 2025)
+Tab 4: ATTENDANCE SCORE
+A. Employee Ranking
+A	B	C	D	E	F	G	H	I	J
+Rank	Employee	Attendance Days	Total Days	Attendance %	Punctuality	Avg Arrival	Avg Hours	Overtime	Score /100
+🥇 1	Berny	158	180	87.8%	98%	08:45	8.4	45	95
+🥈 2	Anaëlle	155	180	86.1%	97%	08:48	8.3	42	92
+🥉 3	Ing Naoussi Lionel	152	180	84.4%	96%	08:50	8.5	58	91
+4	Mildred	150	180	83.3%	95%	08:52	8.2	35	89
+5	Eng Eddy Loïzo	148	180	82.2%	94%	08:55	8.7	85	88
+6	Stéphane Durel	145	180	80.6%	93%	09:00	7.8	28	85
+7	NFE	142	180	78.9%	92%	09:02	8.1	72	83
+8	Berenger Kayo	140	180	77.8%	91%	09:05	8.0	38	81
+9	Eng. Penda Jérémie	138	180	76.7%	90%	09:08	7.9	25	79
+10	Sheila	135	180	75.0%	88%	09:10	7.7	20	76
+11	Nguebang Pradier	132	180	73.3%	86%	09:12	7.6	18	73
+12	Alida	130	180	72.2%	85%	09:15	7.5	15	71
+13	EKOKO Emmanuel	85	180	47.2%	80%	09:20	7.4	12	55
+14	+237 6 93 27 60 76	80	180	44.4%	78%	09:22	7.3	10	50
+15	Berny (Returned)	45	180	25.0%	75%	09:30	7.0	5	30
+Formula for Column G - Score /100:
+
+excel
+=IFERROR(
+   (E2*0.4) + (F2*0.3) + 
+   (1 - (HOUR(H2)*60+MINUTE(H2))/540)*0.15 + 
+   (MIN(I2,100)/100)*0.15, 
+0)*100
+Attendance Score Criteria:
+
+Gold 🥇: Score ≥ 90
+
+Silver 🥈: Score ≥ 80
+
+Bronze 🥉: Score ≥ 70
+
+Needs Improvement: Score < 70
+
+Tab 5: LATE RANKING
+A. Monthly Late Ranking
+A	B	C	D	E	F	G	H
+Rank	Employee	Late Arrivals	Late Minutes	Avg Delay	Most Late	Least Late	Score
+🥇 1	NFE	12	180	15	25 min	5 min	95
+🥈 2	Eng Eddy Loïzo	10	150	15	20 min	5 min	92
+🥉 3	Stéphane Durel	8	120	15	18 min	3 min	88
+4	Berenger Kayo	7	105	15	15 min	2 min	85
+5	Ing Naoussi Lionel	6	90	15	12 min	2 min	82
+6	Eng. Penda Jérémie	5	75	15	10 min	1 min	78
+7	Mildred	4	60	15	8 min	1 min	75
+8	Anaëlle	3	45	15	6 min	0 min	72
+9	Berny	2	30	15	5 min	0 min	68
+10	EKOKO Emmanuel	1	15	15	3 min	0 min	65
+Formula for Late Count:
+
+excel
+=COUNTIFS('Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$D$2:$D$1000, "In", 
+   'Raw Data'!$E$2:$E$1000, ">09:00")
+Formula for Late Minutes:
+
+excel
+=SUMIFS('Raw Data'!$I$2:$I$1000, 
+   'Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$D$2:$D$1000, "In")
+Formula for Avg Delay:
+
+excel
+=IF($B2>0, ROUND($C2/$B2, 0), 0)
+B. Late Ranking Chart
+text
+Monthly Late Arrival Trends
+┌──────────────────────────────────────────────────────┐
+│  12 │                    ████████                   │
+│  10 │                ████████████                   │
+│   8 │            ████████████████                   │
+│   6 │        ████████████████████                   │
+│   4 │    ████████████████████████                   │
+│   2 │████████████████████████████                   │
+│   0 └───────────────────────────────────────────────│
+│       Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec│
+└──────────────────────────────────────────────────────┘
+Tab 6: EARLY RANKING
+A. Early Bird Ranking
+A	B	C	D	E	F	G
+Rank	Employee	Early Arrivals	Avg Arrival	Earliest Time	Consistency	Score
+🏆 1	Berny	145	08:45	07:30	95%	98
+🥈 2	Anaëlle	140	08:48	07:45	92%	95
+🥉 3	Ing Naoussi Lionel	138	08:50	07:50	90%	93
+4	Mildred	135	08:52	07:55	88%	90
+5	Eng Eddy Loïzo	130	08:55	08:00	85%	88
+6	Stéphane Durel	120	09:00	08:10	80%	82
+7	NFE	115	09:02	08:15	78%	79
+8	Berenger Kayo	110	09:05	08:20	75%	76
+9	Eng. Penda Jérémie	105	09:08	08:25	72%	73
+10	Sheila	95	09:10	08:30	68%	68
+Formula for Early Count:
+
+excel
+=COUNTIFS('Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$D$2:$D$1000, "In", 
+   'Raw Data'!$E$2:$E$1000, "<09:00")
+Formula for Avg Arrival:
+
+excel
+=AVERAGEIFS('Raw Data'!$E$2:$E$1000, 
+   'Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$D$2:$D$1000, "In")
+Tab 7: COMPENSATION RANKING
+A. Overtime & Compensation
+A	B	C	D	E	F	G	H	I
+Rank	Employee	Total Overtime (hrs)	Overtime Days	Avg OT/Day	Max OT Day	Compensation (hrs)	Comp Days	Score
+🥇 1	Eng Eddy Loïzo	85	45	1.9	4.5	85	10	98
+🥈 2	NFE	72	38	1.9	4.0	72	9	92
+🥉 3	Ing Naoussi Lionel	58	32	1.8	3.5	58	7	85
+4	Berny	45	25	1.8	3.0	45	6	78
+5	Anaëlle	42	23	1.8	2.8	42	5	75
+6	Berenger Kayo	38	20	1.9	2.5	38	5	72
+7	Mildred	35	18	1.9	2.2	35	4	68
+8	Stéphane Durel	28	15	1.9	2.0	28	3	62
+9	Eng. Penda Jérémie	25	14	1.8	2.0	25	3	58
+10	Sheila	20	11	1.8	1.8	20	2	52
+Formula for Total Overtime:
+
+excel
+=SUMIFS('Raw Data'!$I$2:$I$1000, 
+   'Raw Data'!$C$2:$C$1000, $A2)
+Formula for Overtime Days:
+
+excel
+=COUNTIFS('Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$I$2:$I$1000, ">0")
+Formula for Compensation:
+
+excel
+=SUMIFS('Raw Data'!$I$2:$I$1000, 
+   'Raw Data'!$C$2:$C$1000, $A2, 
+   'Raw Data'!$I$2:$I$1000, ">0") * 0.5
+Compensation Rate:
+
+Overtime hours × 0.5 = Compensation hours
+
+8 hours compensation = 1 day off
+
+Tab 8: BURNOUT INDEX
+A. Burnout Monitoring
+A	B	C	D	E	F	G	H	I
+Employee	Days >10h	Days >12h	Burnout Score	Risk Level	Trend	Warning	Rec Days	Status
+Eng Eddy Loïzo	12	3	65	🔴 High	↑↑	⚠️	3	Monitored
+NFE	8	2	50	🟡 Medium	↑	⚠️	2	OK
+Ing Naoussi Lionel	6	1	35	🟡 Medium	→	✅	1	OK
+Berny	4	0	20	🟢 Low	↓	✅	0	OK
+Anaëlle	3	0	15	🟢 Low	→	✅	0	OK
+Berenger Kayo	3	0	15	🟢 Low	→	✅	0	OK
+Mildred	2	0	10	🟢 Low	↓	✅	0	OK
+Stéphane Durel	1	0	5	🟢 Low	→	✅	0	OK
+Eng. Penda Jérémie	1	0	5	🟢 Low	→	✅	0	OK
+Sheila	0	0	0	🟢 Low	→	✅	0	OK
+Formula for Burnout Score:
+
+excel
+=($B2*5) + ($C2*10)
+Risk Level Logic:
+
+🔴 High: Score > 40
+
+🟡 Medium: Score 20-40
+
+🟢 Low: Score < 20
+
+Conditional Formatting:
+
+text
+Days >10h: Yellow fill
+Days >12h: Red fill
+Score > 40: Red background, White text
+Tab 9: MONTHLY DASHBOARD
+A. KPI Dashboard
+text
+╔══════════════════════════════════════════════════════════════════╗
+║                    NFE HR DASHBOARD - MONTHLY                   ║
+║                         (June 2026)                            ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           ║
+║  │ Attendance  │  │ Avg Arrival │  │ Avg Hours  │           ║
+║  │    88%      │  │   09:11     │  │   8.0      │           ║
+║  └─────────────┘  └─────────────┘  └─────────────┘           ║
+║                                                                ║
+║  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           ║
+║  │  Overtime   │  │ Compensation│  │  Burnout   │           ║
+║  │   50 hrs    │  │   25 hrs    │  │   1 day    │           ║
+║  └─────────────┘  └─────────────┘  └─────────────┘           ║
+║                                                                ║
+║  📊 Top Performers - June 2026:                               ║
+║  ┌──────────────────────────────────────────────────┐         ║
+║  │ 🥇 1. Mildred     │ Attendance: 95%  │ Score: 92 │         ║
+║  │ 🥈 2. Anaëlle     │ Attendance: 93%  │ Score: 90 │         ║
+║  │ 🥉 3. Berny       │ Attendance: 91%  │ Score: 88 │         ║
+║  └──────────────────────────────────────────────────┘         ║
+║                                                                ║
+║  📈 Monthly Trend:                                            ║
+║  100%│              █████████████████████████                ║
+║   90%│          ██████████████████████████████                ║
+║   80%│      ██████████████████████████████████                ║
+║   70%│  ██████████████████████████████████████                ║
+║   60%│████████████████████████████████████████                ║
+║     └──────────────────────────────────────────                ║
+║     Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec          ║
+║                                                                ║
+╚══════════════════════════════════════════════════════════════════╝
+Tab 10: ANNUAL DASHBOARD
+A. Yearly Summary
+text
+╔══════════════════════════════════════════════════════════════════╗
+║               NFE ANNUAL DASHBOARD - 2025/2026                 ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  🏆 2026 GOLD, SILVER & BRONZE EMPLOYEES                     ║
+║  ┌──────────────────────────────────────────────────────┐     ║
+║  │       🥇 GOLD - Berny                               │     ║
+║  │       Score: 95/100  |  Attendance: 87.8%          │     ║
+║  │       "Most Consistent & Punctual Employee"        │     ║
+║  ├──────────────────────────────────────────────────────┤     ║
+║  │       🥈 SILVER - Anaëlle                           │     ║
+║  │       Score: 92/100  |  Attendance: 86.1%          │     ║
+║  │       "Top Performer - Reliable & Early"           │     ║
+║  ├──────────────────────────────────────────────────────┤     ║
+║  │       🥉 BRONZE - Ing Naoussi Lionel                │     ║
+║  │       Score: 91/100  |  Attendance: 84.4%          │     ║
+║  │       "High Overtime Contributor"                   │     ║
+║  └──────────────────────────────────────────────────────┘     ║
+║                                                                ║
+║  📊 Annual Attendance Score: 85.7%                           ║
+║                                                                ║
+║  📈 Monthly Attendance Trends:                                ║
+║  100%│        ██████████████████████████████████████         ║
+║   90%│    ██████████████████████████████████████████         ║
+║   80%│█████████████████████████████████████████████         ║
+║   70%│█████████████████████████████████████████████         ║
+║     └───────────────────────────────────────────              ║
+║     Jul Aug Sep Oct Nov Dec Jan Feb Mar Apr May Jun         ║
+║                                                                ║
+╚══════════════════════════════════════════════════════════════════╝
+Tab 11: EMPLOYEE PROFILES
+A. Individual Employee Dashboard
+Field	Value
+Employee	Berny
+Attendance Score	95/100
+Gold/Silver/Bronze	🥇 Gold
+Attendance Days	158/180
+Attendance Rate	87.8%
+Avg Arrival Time	08:45
+Avg Working Hours	8.4
+Total Overtime	45 hrs
+Compensation	22.5 hrs
+Late Arrivals	2
+Early Arrivals	145
+Burnout Days (>10h)	4
+Burnout Days (>12h)	0
+Risk Level	🟢 Low
+Profile Chart:
+
+text
+Berny - Monthly Performance
+┌──────────────────────────────────────────────────────┐
+│  100%│    ████  ████  ████  ████  ████  ████      │
+│   90%│    ████  ████  ████  ████  ████  ████      │
+│   80%│    ████  ████  ████  ████  ████  ████      │
+│   70%│████████████████████████████████████████      │
+│     └──────────────────────────────────────────      │
+│     Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec│
+└──────────────────────────────────────────────────────┘
+Tab 12: CHARTS
+Chart 1: Attendance Rate by Month
+text
+Line Chart showing monthly attendance trends
+Chart 2: Employee Score Distribution
+text
+Bar Chart with Gold/Silver/Bronze color coding
+Chart 3: Overtime vs Compensation
+text
+Stacked Bar Chart or Combo Chart
+Chart 4: Burnout Risk Heatmap
+text
+Color-coded matrix (Green/Yellow/Red)
+Chart 5: Early vs Late Arrivals
+text
+Bubble Chart or Scatter Plot
+Tab 13: PIVOT TABLES
+A. Employee Summary Pivot
+Employee	Attendance	Avg Hours	Overtime	Score
+Berny	158	8.4	45	95
+Anaëlle	155	8.3	42	92
+Ing Naoussi Lionel	152	8.5	58	91
+B. Monthly Summary Pivot
+Month	Attendance	Overtime	Score
+Jun 2026	88%	50	85
+May 2026	90%	59	88
+Apr 2026	93%	82	92
+Tab 14: EXECUTIVE SUMMARY
+text
+╔══════════════════════════════════════════════════════════════════╗
+║           NFE EXECUTIVE SUMMARY - ANNUAL REPORT 2025/2026      ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  📊 OVERALL ATTENDANCE STATISTICS                             ║
+║  ┌──────────────────────────────────────────────────────┐     ║
+║  │  Total Employees              15                    │     ║
+║  │  Average Attendance Rate      85.7%                 │     ║
+║  │  Total Overtime Hours         652                    │     ║
+║  │  Total Compensation Hours     326                    │     ║
+║  │  Burnout Incidents            12                     │     ║
+║  └──────────────────────────────────────────────────────┘     ║
+║                                                                ║
+║  🏆 TOP PERFORMERS                                            ║
+║  ┌──────────────────────────────────────────────────────┐     ║
+║  │  🥇  GOLD     Berny                    95/100        │     ║
+║  │  🥈  SILVER   Anaëlle                  92/100        │     ║
+║  │  🥉  BRONZE   Ing Naoussi Lionel       91/100        │     ║
+║  └──────────────────────────────────────────────────────┘     ║
+║                                                                ║
+║  ⚠️  AREAS FOR IMPROVEMENT                                    ║
+║  • Reduce late arrivals (Avg: 6 per employee)                ║
+║  • Increase overall attendance (Target: 90%)                 ║
+║  • Monitor burnout risk (12 incidents identified)            ║
+║                                                                ║
+║  ✅ RECOMMENDATIONS                                           ║
+║  1. Implement flexible working hours for top performers      ║
+║  2. Consider bonus structure for high attendance             ║
+║  3. Burnout prevention program for at-risk employees         ║
+║  4. Recognition program for punctuality                      ║
+║                                                                ║
+╚══════════════════════════════════════════════════════════════════╝
+🔧 VBA MACRO FOR DATA PARSING
+vba
+Sub ParseWhatsAppData()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim employeeName As String, action As String
+    Dim dt As Date, tm As Date
+    Dim destRow As Long
+    
+    Set ws = ThisWorkbook.Sheets("Raw Data")
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    destRow = 2
+    For i = 2 To lastRow
+        ' Parse date and time
+        dt = ws.Cells(i, 1).Value
+        tm = ws.Cells(i, 2).Value
+        
+        ' Parse employee and action
+        employeeName = ws.Cells(i, 3).Value
+        If InStr(employeeName, "In") > 0 Or InStr(employeeName, "Out") > 0 Then
+            ' Extract name and action
+        End If
+    Next i
+End Sub
+📊 CONDITIONAL FORMATTING RULES
+1. Attendance Score Coloring
+Score Range	Color
+≥ 90	🟢 Green
+80-89	🟡 Yellow
+70-79	🟠 Orange
+< 70	🔴 Red
+2. Burnout Risk
+Days >10h	Days >12h	Color
+0-2	0	🟢 Green
+3-5	1	🟡 Yellow
+6-9	2	🟠 Orange
+≥10	≥3	🔴 Red
+3. Overtime
+Hours	Color
+0-20	🟢 Green
+21-40	🟡 Yellow
+41-60	🟠 Orange
+>60	🔴 Red
+📈 KEY FORMULA REFERENCE
+excel
+' Date Extraction
+=DATE(LEFT(A2,4), MID(A2,6,2), MID(A2,9,2))
+
+' Time Extraction
+=TIMEVALUE(MID(A2,12,8))
+
+' Standard Hours
+=IF(G2="Standard", (F2-E2)*24, (F2-E2)*24)
+
+' Overtime for Standard Shift (09:00-18:00)
+=IF(G2="Standard", 
+   MAX(0, (F2-TIME(18,0,0))*24), 
+   MAX(0, (F2-TIME(17,0,0))*24))
+
+' Missing OUT - Standard
+=IF(F2="", TIME(18,0,0), F2)
+
+' Missing OUT - Early
+=IF(F2="", TIME(17,0,0), F2)
+
+' Attendance Rate
+=COUNTA(IF(F2<>"",F2))/180
+
+' Employee Score
+=(E2*0.4)+(F2*0.3)+
+(1-(HOUR(G2)*60+MINUTE(G2))/540)*0.15+
+(MIN(H2,100)/100)*0.15
+🎨 SUGGESTED EXCEL FORMATTING
+Colors:
+Primary: #003366 (Dark Blue)
+
+Secondary: #0066CC (Medium Blue)
+
+Accent: #66B3FF (Light Blue)
+
+Gold: #FFD700
+
+Silver: #C0C0C0
+
+Bronze: #CD7F32
+
+Red: #FF0000
+
+Green: #00CC00
+
+Fonts:
+Headers: Arial Black, 12pt
+
+Body: Calibri, 10pt
+
+KPIs: Calibri, 16pt Bold
+
+🔄 DATA REFRESH INSTRUCTIONS
+Import New Data: Paste WhatsApp export into Raw Data tab
+
+Run Parser: Press Ctrl+Alt+F5 or click "Refresh All"
+
+Check Dates: Ensure date formatting is consistent
+
+Verify Totals: Compare against manual counts
+
+📅 NEXT STEPS
+Setup: Create the workbook with all tabs
+
+Import: Paste the WhatsApp data into Raw Data tab
+
+Refresh: Run the data parser
+
+Validate: Check formulas and calculations
+
+Customize: Add your company logo and branding
+
+Distribute: Share with NFE management

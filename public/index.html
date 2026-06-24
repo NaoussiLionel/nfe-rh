@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>NFE Structural - RH</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --primary: #1a1a8a;
+  --primary-hover: #15157a;
+  --primary-light: #e8e8ff;
+  --primary-mid: #6666cc;
+  --accent: #00C8FF;
+  --accent-hover: #00b0e0;
+  --accent-soft: #e5f9ff;
+  --gold: #FFD700;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f0f2f7;
+  --card: #ffffff;
+  --text: #1a1a2e;
+  --text-secondary: #4a4a6a;
+  --text-muted: #8a8aaa;
+  --border: #d8d8e8;
+  --radius: 10px;
+  --shadow: 0 1px 4px rgba(26,26,138,.06);
+  --shadow-hover: 0 4px 16px rgba(26,26,138,.10);
+  --nav-bg: #0f0f4a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+.nav{
+  background:var(--nav-bg);
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  height:60px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
+  gap:28px;
+}
+.nav-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+}
+.nav-brand span{
+  color:#fff;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.3px;
+  opacity:.9;
+}
+.nav-links{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links button{
+  background:transparent;
+  border:none;
+  color:rgba(255,255,255,.5);
+  padding:0 14px;
+  height:60px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  font-family:'Inter',sans-serif;
+  white-space:nowrap;
+  position:relative;
+  transition:color .15s, background .15s;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.nav-links button:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.04)}
+.nav-links button.sel{color:#fff}
+.nav-links button.sel::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:8px;
+  right:8px;
+  height:3px;
+  background:var(--accent);
+  border-radius:3px 3px 0 0;
+  box-shadow:0 0 8px rgba(0,200,255,.4);
+}
+.container{max-width:1200px;margin:0 auto;padding:24px 20px}
+.page{display:none;animation:fadeIn .3s ease}
+.page.sel{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.kpi{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
+  transition:transform .2s,box-shadow .2s;
+  position:relative;
+  overflow:hidden;
+}
+.kpi::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:var(--primary);
+  opacity:.15;
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kpi-value{font-size:28px;font-weight:800;color:var(--primary);line-height:1.2;letter-spacing:-.5px}
+.kpi-value.gold{color:#b8860b}
+.kpi-value.green{color:var(--success)}
+.kpi-value.orange{color:var(--warning)}
+.kpi-value.red{color:var(--danger)}
+.kpi-value.accent{color:var(--accent)}
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
+  margin-bottom:16px;
+  transition:box-shadow .2s;
+}
+.card:hover{box-shadow:var(--shadow-hover)}
+.card-title{
+  font-size:15px;
+  font-weight:700;
+  color:var(--primary);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  background:var(--nav-bg);
+  color:#fff;
+  padding:10px 14px;
+  text-align:left;
+  font-weight:600;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-secondary)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--primary-light)}
+table.compact td,table.compact th{padding:7px 12px;font-size:12px}
+
+.rank-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:26px;
+  height:26px;
+  border-radius:50%;
+  font-weight:700;
+  font-size:12px;
+}
+.rank-1{background:#fff7d6;color:#b8860b;border:1px solid var(--gold)}
+.rank-2{background:#f0f4ff;color:#4a6fa5;border:1px solid var(--silver)}
+.rank-3{background:#fef0e8;color:#a0522d;border:1px solid var(--bronze)}
+.rank-4{background:var(--bg);color:var(--text-muted);border:1px solid var(--border)}
+
+.medal{font-size:18px;display:inline-block;width:28px;text-align:center}
+.medal.gold{filter:drop-shadow(0 0 3px rgba(255,215,0,.6))}
+.medal.silver{filter:drop-shadow(0 0 3px rgba(192,192,192,.5))}
+.medal.bronze{filter:drop-shadow(0 0 3px rgba(205,127,50,.5))}
+
+.risk-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.risk-dot.green{background:var(--success);box-shadow:0 0 4px rgba(16,185,129,.4)}
+.risk-dot.yellow{background:var(--warning);box-shadow:0 0 4px rgba(245,158,11,.4)}
+.risk-dot.red{background:var(--danger);box-shadow:0 0 4px rgba(239,68,68,.4)}
+
+.btn{
+  padding:8px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:600;
+  font-family:'Inter',sans-serif;
+  transition:all .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-primary{background:var(--accent);color:var(--nav-bg)}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{background:#059669;transform:translateY(-1px)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-secondary)}
+.btn-outline:hover{background:var(--bg);border-color:var(--primary-mid)}
+
+input[type="text"],input[type="search"]{
+  padding:10px 14px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:13px;
+  font-family:'Inter',sans-serif;
+  outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  width:100%;
+  color:var(--text);
+}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.15)}
+select{
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:12px;
+  font-family:'Inter',sans-serif;
+  outline:none;
+  background:#fff;
+  cursor:pointer;
+  color:var(--text-secondary);
+}
+select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)}
+
+.msg{
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:500;
+  display:none;
+  margin-top:10px;
+}
+.msg.info{background:var(--accent-soft);color:var(--primary);display:block;border:1px solid rgba(0,200,255,.2)}
+.msg.ok{background:#ecfdf5;color:#065f46;display:block;border:1px solid rgba(16,185,129,.2)}
+.msg.err{background:#fef2f2;color:#991b1b;display:block;border:1px solid rgba(239,68,68,.2)}
+.msg.warn{background:#fffbeb;color:#92400e;display:block;border:1px solid rgba(245,158,11,.2)}
+
+.skeleton{background:linear-gradient(90deg,var(--border) 25%,#f1f5f9 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.chart-wrap{position:relative;height:220px}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+
+.empty{text-align:center;padding:32px 16px;color:var(--text-muted)}
+.empty p{font-size:14px}
+.badge-score{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+}
+.badge-gold{background:linear-gradient(135deg,#fff7d6,#ffe066);color:#5c3d00}
+.badge-silver{background:linear-gradient(135deg,#f0f4ff,#d0d8e8);color:#2c3e50}
+.badge-bronze{background:linear-gradient(135deg,#fef0e8,#e8c8b0);color:#5c2e00}
+.badge-ni{background:#fee2e2;color:#991b1b}
+
+.top3-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.top3-item:last-child{border-bottom:none}
+.top3-rank{font-size:24px;width:40px;text-align:center}
+.top3-name{font-weight:600;flex:1;font-size:14px;color:var(--text)}
+.top3-score{color:var(--text-muted);font-size:12px}
+.top3-stat{font-size:11px;color:var(--text-muted)}
+.emp-row{cursor:pointer;transition:background .15s}
+.emp-row:hover td{background:var(--primary-light)!important}
+
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15,15,74,.6);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal-overlay.sel{display:flex}
+.modal{
+  background:#fff;
+  border-radius:16px;
+  max-width:720px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  padding:28px;
+  box-shadow:0 25px 80px rgba(15,15,74,.3);
+  animation:modalIn .25s ease;
+  border:1px solid rgba(0,200,255,.1);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+.modal-header h2{font-size:22px;font-weight:800;color:var(--primary)}
+.modal-close{
+  background:none;
+  border:none;
+  font-size:28px;
+  cursor:pointer;
+  color:var(--text-muted);
+  padding:4px 8px;
+  border-radius:6px;
+  transition:background .15s;
+}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-field{padding:12px 14px;background:var(--bg);border-radius:10px}
+.modal-field label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px}
+.modal-field .val{font-size:20px;font-weight:800;color:var(--primary);line-height:1.3}
+.modal-field .val.green{color:var(--success)}
+.modal-field .val.orange{color:var(--warning)}
+.modal-field .val.red{color:var(--danger)}
+.modal-field .val.accent{color:var(--accent)}
+
+.score-dist{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.score-dist-item{text-align:center;padding:14px 20px;border-radius:10px;flex:1;min-width:100px}
+.score-dist-item.gold{background:linear-gradient(135deg,#fff7d6,#ffe066);border:1px solid rgba(255,215,0,.3)}
+.score-dist-item.silver{background:linear-gradient(135deg,#f0f4ff,#d0d8e8);border:1px solid rgba(192,192,192,.3)}
+.score-dist-item.bronze{background:linear-gradient(135deg,#fef0e8,#e8c8b0);border:1px solid rgba(205,127,50,.3)}
+.score-dist-item.ni{background:#fee2e2;border:1px solid rgba(239,68,68,.2)}
+.score-dist-num{font-size:28px;font-weight:900;line-height:1.2}
+.score-dist-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-top:2px}
+
+@media(max-width:640px){
+  .nav{padding:0 10px;gap:10px}
+  .nav-links button{padding:0 8px;font-size:11px}
+  .nav-admin{padding:0 6px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+  .modal-grid{grid-template-columns:1fr}
+  .score-dist{flex-direction:column}
+}
+.disc-tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px}
+.disc-tabs button{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;background:transparent;color:var(--text-secondary);transition:all .15s}
+.disc-tabs button.sel{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.nav-admin{
+  background:transparent;
+  border:none;
+  color:rgba(255,255,255,.4);
+  width:40px;height:40px;
+  cursor:pointer;
+  font-size:20px;
+  border-radius:8px;
+  transition:all .15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  position:relative;
+}
+.nav-admin:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-admin.sel{color:#fff}
+.admin-dropdown{
+  display:none;
+  position:absolute;
+  top:100%;
+  right:0;
+  background:#fff;
+  border-radius:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  min-width:200px;
+  overflow:hidden;
+  z-index:150;
+  border:1px solid var(--border);
+}
+.admin-dropdown.sel{display:block}
+.admin-dropdown button{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  padding:12px 16px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  font-family:'Inter',sans-serif;
+  color:var(--text-secondary);
+  transition:background .1s;
+  text-align:left;
+}
+.admin-dropdown button:hover{background:var(--primary-light);color:var(--primary)}
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.admin-tabs button{
+  flex:1;
+  padding:10px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  font-family:'Inter',sans-serif;
+  color:var(--text-muted);
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+.admin-tabs button.sel{color:var(--primary);border-bottom-color:var(--accent)}
+.admin-section{display:none}
+.admin-section.sel{display:block}
+</style>
+</head>
+<body>
+
+<div class="nav">
+<div class="nav-brand">
+<img src="logo.png" alt="NFE Structural" style="height:34px;width:auto">
+<span>NFE RH</span>
+</div>
+<div class="nav-links">
+<button id="btn-dashboard" class="sel" onclick="show('dashboard')">Dashboard</button>
+<button id="btn-performance" onclick="show('performance')">Performance</button>
+<button id="btn-discipline" onclick="show('discipline')">Discipline</button>
+<button id="btn-charge" onclick="show('charge')">Charge</button>
+<button id="btn-analysis" onclick="show('analysis')">Analyse</button>
+<button id="btn-employees" onclick="show('employees')">Employes</button>
+</div>
+<div style="position:relative;flex-shrink:0">
+<button class="nav-admin" id="btn-admin" onclick="toggleAdmin()">&#9881;</button>
+<div class="admin-dropdown" id="adminDropdown">
+<button onclick="adminAction('mapping')">&#128279; Mapping WhatsApp</button>
+<button onclick="adminAction('config')">&#9881; Configuration</button>
+<button onclick="adminAction('test')">&#128736; Simulation test</button>
+</div>
+</div>
+</div>
+
+<div class="container">
+
+<div id="page-dashboard" class="page sel">
+<div class="kpis">
+<div class="kpi"><div class="kpi-label">Employes actifs</div><div class="kpi-value" id="d1">--</div></div>
+<div class="kpi"><div class="kpi-label">Presence moyenne</div><div class="kpi-value green" id="d2">--</div></div>
+<div class="kpi"><div class="kpi-label">Heures moy</div><div class="kpi-value" id="d3">--</div></div>
+<div class="kpi"><div class="kpi-label">Total OT</div><div class="kpi-value orange" id="d4">--</div></div>
+<div class="kpi"><div class="kpi-label">Compensation</div><div class="kpi-value gold" id="d5">--</div></div>
+<div class="kpi"><div class="kpi-label">Incidents burnout</div><div class="kpi-value red" id="d6">--</div></div>
+</div>
+<div class="grid-2">
+<div class="card">
+<div class="card-title">Tendance presence</div>
+<div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+</div>
+<div class="card">
+<div class="card-title">Top 3 employes</div>
+<div id="top3"><div class="skeleton" style="height:52px"></div><div class="skeleton" style="height:52px;margin-top:8px"></div><div class="skeleton" style="height:52px;margin-top:8px"></div></div>
+</div>
+</div>
+</div>
+
+<div id="page-performance" class="page">
+<div class="card">
+<div class="card-title">Distribution des scores</div>
+<div id="perfDist"><div class="skeleton" style="height:60px"></div></div>
+</div>
+<div class="card">
+<div class="card-title">Classement general</div>
+<div class="table-wrap"><table><thead><tr><th>Rang</th><th>Employe</th><th>Jours</th><th>Presence</th><th>Heures moy</th><th>OT</th><th>Retards</th><th>Avances</th><th>Score</th></tr></thead><tbody id="perfBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="page-discipline" class="page">
+<div class="disc-tabs">
+<button id="disc-late" class="sel" onclick="setDiscTab('late')">&#9200; Retards</button>
+<button id="disc-early" onclick="setDiscTab('early')">&#9926; Avances</button>
+</div>
+<div id="disc-late-section">
+<div class="card">
+<div class="card-title">Classement des retards</div>
+<div class="table-wrap"><table><thead><tr><th>Rang</th><th>Employe</th><th>Retards</th><th>Minutes total</th><th>Moy/retard</th></tr></thead><tbody id="lateBody"></tbody></table></div>
+</div>
+</div>
+<div id="disc-early-section" style="display:none">
+<div class="card">
+<div class="card-title">Classement des arrivees matinales</div>
+<div class="table-wrap"><table><thead><tr><th>Rang</th><th>Employe</th><th>Avances</th><th>Arrivee moy</th><th>Consistance</th><th>Score</th></tr></thead><tbody id="earlyBody"></tbody></table></div>
+</div>
+</div>
+</div>
+
+<div id="page-charge" class="page">
+<div class="grid-2">
+<div class="card">
+<div class="card-title">Compensation heures sup</div>
+<div class="table-wrap"><table class="compact"><thead><tr><th>Employe</th><th>OT</th><th>Jours</th><th>Compensation</th><th>Jours off</th></tr></thead><tbody id="otBody"></tbody></table></div>
+</div>
+<div class="card">
+<div class="card-title">Indice de Burnout</div>
+<div class="table-wrap"><table class="compact"><thead><tr><th>Employe</th><th>&gt;10h</th><th>&gt;12h</th><th>Score</th><th>Risque</th></tr></thead><tbody id="burnBody"></tbody></table></div>
+</div>
+</div>
+</div>
+
+<div id="page-analysis" class="page">
+<div class="card" style="padding:14px 18px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font-weight:700;font-size:15px;color:var(--primary)">Analyse</span>
+<div style="display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:8px;border:1px solid var(--border)">
+<button class="btn btn-sm" id="aper-w" onclick="setPeriod('weekly')" style="background:var(--accent);color:var(--nav-bg)">Semaine</button>
+<button class="btn btn-sm" id="aper-m" onclick="setPeriod('monthly')">Mois</button>
+<button class="btn btn-sm" id="aper-y" onclick="setPeriod('yearly')">Annee</button>
+</div>
+</div>
+</div>
+<div class="kpis">
+<div class="kpi"><div class="kpi-label">Periodes</div><div class="kpi-value" id="a1">--</div></div>
+<div class="kpi"><div class="kpi-label">Presence moy</div><div class="kpi-value green" id="a2">--</div></div>
+<div class="kpi"><div class="kpi-label">Employes</div><div class="kpi-value" id="a3">--</div></div>
+<div class="kpi"><div class="kpi-label">OT total</div><div class="kpi-value orange" id="a4">--</div></div>
+<div class="kpi"><div class="kpi-label">Retards</div><div class="kpi-value red" id="a5">--</div></div>
+<div class="kpi"><div class="kpi-label">Avances</div><div class="kpi-value accent" id="a6">--</div></div>
+</div>
+<div class="card">
+<div class="card-title">Tendance presence</div>
+<div class="chart-wrap" style="height:240px"><canvas id="analysisChart"></canvas></div>
+</div>
+<div class="card">
+<div class="card-title">Details par periode</div>
+<div class="table-wrap"><table><thead><tr><th>Periode</th><th>Employes</th><th>Presence</th><th>Heures moy</th><th>OT</th><th>Retards</th><th>Avances</th></tr></thead><tbody id="analysisBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="page-employees" class="page">
+<div class="card">
+<div class="card-title">Liste des employes</div>
+<div style="margin-bottom:12px"><input type="text" id="empSearch" placeholder="Rechercher..." oninput="loadEmp()"></div>
+<div class="table-wrap"><table class="compact"><thead><tr><th>Employe</th><th>Jours</th><th>Presence</th><th>Heures</th><th>OT</th><th>Retards</th><th>Avances</th><th>Score</th><th></th></tr></thead><tbody id="empBody"></tbody></table></div>
+</div>
+</div>
+
+</div>
+
+<div class="modal-overlay" id="modal">
+<div class="modal">
+<div class="modal-header">
+<h2 id="modalName">--</h2>
+<button class="modal-close" onclick="closeModal()">&times;</button>
+</div>
+<div class="modal-grid" id="modalFields"></div>
+<div class="card" style="margin-top:14px;padding:14px">
+<div class="card-title" style="margin-bottom:10px;font-size:13px">Performance mensuelle</div>
+<div class="chart-wrap" style="height:180px"><canvas id="modalChart"></canvas></div>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="adminModal">
+<div class="modal" style="max-width:600px">
+<div class="modal-header">
+<h2>Administration</h2>
+<button class="modal-close" onclick="closeAdmin()">&times;</button>
+</div>
+<div class="admin-tabs">
+<button id="adm-mapping" class="sel" onclick="adminTab('mapping')">Mapping</button>
+<button id="adm-config" onclick="adminTab('config')">Configuration</button>
+<button id="adm-test" onclick="adminTab('test')">Simulation</button>
+</div>
+<div id="adm-section-mapping" class="admin-section sel">
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:12px">Associe chaque contact WhatsApp a un employe.</p>
+<div class="table-wrap"><table class="compact"><thead><tr><th>Contact</th><th>Employe</th><th></th></tr></thead><tbody id="mapBody"></tbody></table></div>
+<div id="mapMsg" class="msg"></div>
+</div>
+<div id="adm-section-config" class="admin-section">
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+<div style="flex:1;min-width:120px">
+<label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px">Debut de service</label>
+<input type="text" id="shiftStartInput" placeholder="09:00" style="font-size:16px;font-weight:700;text-align:center;padding:8px">
+</div>
+<div style="flex:1;min-width:120px">
+<label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px">Fin de service</label>
+<input type="text" id="shiftEndInput" placeholder="18:00" style="font-size:16px;font-weight:700;text-align:center;padding:8px">
+</div>
+</div>
+<button class="btn btn-primary" onclick="saveConfig()" style="width:100%;justify-content:center">Sauvegarder</button>
+<div id="configMsg" class="msg"></div>
+</div>
+<div id="adm-section-test" class="admin-section">
+<div style="margin-bottom:12px">
+<label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px">Nom de l'employe</label>
+<input type="text" id="nom" placeholder="Ex: Jean Dupont">
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-success" onclick="pt('IN')" style="flex:1;justify-content:center;padding:10px">Pointer IN</button>
+<button class="btn btn-danger" onclick="pt('OUT')" style="flex:1;justify-content:center;padding:10px">Pointer OUT</button>
+</div>
+<div id="tm" class="msg"></div>
+<hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+<h3 style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px">Rapports WhatsApp</h3>
+<div style="display:flex;gap:8px">
+<button class="btn btn-primary" onclick="sendReport('weekly')" style="flex:1;justify-content:center;padding:10px">📅 Rapport semaine</button>
+<button class="btn btn-primary" onclick="sendReport('monthly')" style="flex:1;justify-content:center;padding:10px">📆 Rapport mois</button>
+</div>
+<div id="rm" class="msg"></div>
+<hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+<button class="btn btn-outline" onclick="ca()" style="width:100%;justify-content:center;padding:10px;color:var(--danger);border-color:var(--danger)">Tout effacer</button>
+<div id="cm" class="msg"></div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script>
+const MEDALS = { GOLD: '\u{1F947}', SILVER: '\u{1F948}', BRONZE: '\u{1F949}', NI: '' };
+const MEDAL_CLS = { GOLD: 'medal gold', SILVER: 'medal silver', BRONZE: 'medal bronze', NI: '' };
+
+async function g(u) {
+  try { const r = await fetch(u); return await r.json(); }
+  catch(e) { console.error(u, e); return null; }
+}
+
+let chartTrend = null, chartModal = null, chartAnalysis = null;
+let analysisPeriod = 'weekly';
+
+function medalHtml(m) {
+  if (!m || m === 'NI') return '';
+  return '<span class="' + MEDAL_CLS[m] + '">' + MEDALS[m] + '</span>';
+}
+
+function scoreBadge(s) {
+  if (s >= 90) return '<span class="badge-score badge-gold">Or</span>';
+  if (s >= 80) return '<span class="badge-score badge-silver">Argent</span>';
+  if (s >= 70) return '<span class="badge-score badge-bronze">Bronze</span>';
+  return '<span class="badge-score badge-ni">Amelioration</span>';
+}
+
+function riskHtml(r) {
+  const dots = { LOW: 'green', MEDIUM: 'yellow', HIGH: 'red' };
+  const labels = { LOW: 'Faible', MEDIUM: 'Moyen', HIGH: 'Eleve' };
+  return '<span class="risk-dot ' + (dots[r] || 'green') + '"></span>' + (labels[r] || r);
+}
+
+async function loadDash() {
+  const s = await g('/api/executive-summary');
+  if (s) {
+    document.getElementById('d1').textContent = s.total_employes || '0';
+    document.getElementById('d2').textContent = (s.avg_presence || 0) + '%';
+    document.getElementById('d3').textContent = (s.avg_heures || 0) + 'h';
+    document.getElementById('d4').textContent = (s.total_ot || 0) + 'h';
+    document.getElementById('d5').textContent = (s.total_compensation || 0) + 'h';
+    document.getElementById('d6').textContent = s.burnout_incidents || '0';
+  }
+  const t = await g('/api/trends');
+  if (t && t.length > 0 && typeof Chart !== 'undefined') {
+    if (chartTrend) chartTrend.destroy();
+    const ctx = document.getElementById('chartTrend').getContext('2d');
+    chartTrend = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: t.map(x => x.mois),
+        datasets: [{
+          label: 'Presence %', data: t.map(x => x.presence),
+          borderColor: '#00C8FF', backgroundColor: 'rgba(0,200,255,.07)',
+          borderWidth: 2.5, pointBackgroundColor: '#00C8FF', pointBorderColor: '#fff',
+          pointBorderWidth: 2, pointRadius: 3, tension: .35, fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: v => v + '%' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+  const r = await g('/api/ranking');
+  if (r && r.length > 0) {
+    const badges = { '1': '\u{1F947}', '2': '\u{1F948}', '3': '\u{1F949}' };
+    document.getElementById('top3').innerHTML = r.slice(0,3).map(x =>
+      '<div class="top3-item"><div class="top3-rank">' + (badges[x.badge] || x.badge) + '</div><div class="top3-name">' + x.employe + '</div><div class="top3-score">Score ' + x.score + '/100</div></div>'
+    ).join('');
+  }
+}
+
+async function loadPerf() {
+  const d = await g('/api/attendance-score');
+  const body = document.getElementById('perfBody');
+  const dist = document.getElementById('perfDist');
+  if (!d || d.length === 0) {
+    body.innerHTML = '<tr><td colspan="9" class="empty">Aucune donnee</td></tr>';
+    dist.innerHTML = '<p style="color:var(--text-muted);text-align:center">Aucune donnee</p>'; return;
+  }
+  const counts = { GOLD: 0, SILVER: 0, BRONZE: 0, NI: 0 };
+  d.forEach(r => { counts[r.medal] = (counts[r.medal] || 0) + 1; });
+  dist.innerHTML = '<div class="score-dist">'
+    + '<div class="score-dist-item gold"><div class="score-dist-num">' + (counts.GOLD || 0) + '</div><div class="score-dist-label">Or</div></div>'
+    + '<div class="score-dist-item silver"><div class="score-dist-num">' + (counts.SILVER || 0) + '</div><div class="score-dist-label">Argent</div></div>'
+    + '<div class="score-dist-item bronze"><div class="score-dist-num">' + (counts.BRONZE || 0) + '</div><div class="score-dist-label">Bronze</div></div>'
+    + '<div class="score-dist-item ni"><div class="score-dist-num">' + (counts.NI || 0) + '</div><div class="score-dist-label">A ameliorer</div></div>'
+    + '</div>';
+  body.innerHTML = d.map(x =>
+    '<tr><td>' + medalHtml(x.medal) + ' <span class="rank-badge rank-' + x.badge + '">' + x.rang + '</span></td>'
+    + '<td><b>' + x.employe + '</b></td><td>' + x.jours_presents + '</td><td>' + x.taux_presence + '%</td>'
+    + '<td>' + x.avg_heures + 'h</td><td>' + x.total_ot + 'h</td><td>' + x.retards + '</td><td>' + x.avances + '</td>'
+    + '<td><b>' + x.score + '</b> ' + scoreBadge(x.score) + '</td></tr>'
+  ).join('');
+}
+
+let discTab = 'late';
+
+function setDiscTab(t) {
+  discTab = t;
+  ['disc-late','disc-early'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  document.getElementById('disc-' + t).classList.add('sel');
+  document.getElementById('disc-late-section').style.display = t === 'late' ? '' : 'none';
+  document.getElementById('disc-early-section').style.display = t === 'early' ? '' : 'none';
+  if (t === 'late') loadLate();
+  else loadEarly();
+}
+
+async function loadLate() {
+  const d = await g('/api/late-ranking');
+  const body = document.getElementById('lateBody');
+  if (!d || d.length === 0) { body.innerHTML = '<tr><td colspan="5" class="empty">Aucun retard</td></tr>'; return; }
+  body.innerHTML = d.map(x =>
+    '<tr><td><span class="rank-badge rank-' + Math.min(x.rang, 4) + '">' + x.rang + '</span></td>'
+    + '<td><b>' + x.employe + '</b></td><td>' + x.retards + '</td><td>' + x.total_minutes_retard + ' min</td>'
+    + '<td>' + (x.avg_minutes_retard || 0) + ' min</td></tr>'
+  ).join('');
+}
+
+async function loadEarly() {
+  const d = await g('/api/early-ranking');
+  const body = document.getElementById('earlyBody');
+  if (!d || d.length === 0) { body.innerHTML = '<tr><td colspan="5" class="empty">Aucune arrivee</td></tr>'; return; }
+  body.innerHTML = d.map(x =>
+    '<tr><td><span class="rank-badge rank-' + Math.min(x.rang, 4) + '">' + x.rang + '</span></td>'
+    + '<td><b>' + x.employe + '</b></td><td>' + x.avances + '</td><td>' + x.avg_arrival + '</td>'
+    + '<td>' + Math.round(x.consistence * 100) + '%</td><td><b>' + (x.score || '') + '</b></td></tr>'
+  ).join('');
+}
+
+async function loadCharge() {
+  const [ot, burn] = await Promise.all([g('/api/compensation'), g('/api/burnout')]);
+  const otBody = document.getElementById('otBody');
+  const burnBody = document.getElementById('burnBody');
+  otBody.innerHTML = (!ot || ot.length === 0)
+    ? '<tr><td colspan="5" class="empty">Aucune heure sup</td></tr>'
+    : ot.map(x => '<tr><td><b>' + x.employe + '</b></td><td>' + x.total_ot + 'h</td><td>' + x.jours_ot + '</td><td><b>' + x.compensation_heures + 'h</b></td><td>' + x.jours_compensation + '</td></tr>').join('');
+  burnBody.innerHTML = (!burn || burn.length === 0)
+    ? '<tr><td colspan="5" class="empty">Aucune donnee</td></tr>'
+    : burn.map(x => '<tr><td><b>' + x.employe + '</b></td><td>' + x.jours_plus_10h + '</td><td>' + x.jours_plus_12h + '</td><td><b>' + x.burnout_score + '</b></td><td>' + riskHtml(x.risque) + '</td></tr>').join('');
+}
+
+function setPeriod(p) {
+  analysisPeriod = p;
+  ['aper-w','aper-m','aper-y'].forEach(id => { const el = document.getElementById(id); if (el) { el.style.background = ''; el.style.color = ''; } });
+  const active = document.getElementById('aper-' + p.charAt(0));
+  if (active) { active.style.background = 'var(--accent)'; active.style.color = 'var(--nav-bg)'; }
+  loadAnalysis();
+}
+
+async function loadAnalysis() {
+  const d = await g('/api/analysis/' + analysisPeriod);
+  const body = document.getElementById('analysisBody');
+  if (!d || d.length === 0) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">Aucune donnee</td></tr>';
+    ['a1','a2','a3','a4','a5','a6'].forEach(id => document.getElementById(id).textContent = id.startsWith('a4') ? '0h' : '0');
+    return;
+  }
+  document.getElementById('a1').textContent = d.length;
+  document.getElementById('a2').textContent = (d.reduce((s,x) => s + +x.presence, 0) / d.length).toFixed(1) + '%';
+  document.getElementById('a3').textContent = Math.round(d.reduce((s,x) => s + +x.employes, 0) / d.length);
+  document.getElementById('a4').textContent = d.reduce((s,x) => s + +x.total_ot, 0).toFixed(1) + 'h';
+  document.getElementById('a5').textContent = d.reduce((s,x) => s + +x.retards, 0);
+  document.getElementById('a6').textContent = d.reduce((s,x) => s + +x.avances, 0);
+  body.innerHTML = d.map(x =>
+    '<tr><td><b>' + x.periode + '</b></td><td>' + x.employes + '</td><td>' + x.presence + '%</td>'
+    + '<td>' + x.avg_heures + 'h</td><td>' + x.total_ot + 'h</td><td>' + x.retards + '</td><td>' + x.avances + '</td></tr>'
+  ).join('');
+  if (typeof Chart !== 'undefined') {
+    if (chartAnalysis) chartAnalysis.destroy();
+    const ctx = document.getElementById('analysisChart').getContext('2d');
+    chartAnalysis = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: d.map(x => x.periode),
+        datasets: [
+          { label: 'Presence %', data: d.map(x => x.presence), borderColor: '#1a1a8a', backgroundColor: 'rgba(26,26,138,.06)', borderWidth: 2.5, pointBackgroundColor: '#1a1a8a', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 3, tension: .35, fill: true, yAxisID: 'y' },
+          { label: 'Employes', data: d.map(x => x.employes), borderColor: '#00C8FF', backgroundColor: 'rgba(0,200,255,.06)', borderWidth: 2, pointBackgroundColor: '#00C8FF', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 3, tension: .35, fill: true, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+        scales: {
+          y: { beginAtZero: true, max: 100, position: 'left', grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: v => v + '%' } },
+          y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { callback: v => v } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+async function loadEmp() {
+  const d = await g('/api/attendance-score');
+  const q = (document.getElementById('empSearch')?.value || '').toLowerCase();
+  const body = document.getElementById('empBody');
+  if (!d || d.length === 0) { body.innerHTML = '<tr><td colspan="9" class="empty">Aucun employe</td></tr>'; return; }
+  const filtered = q ? d.filter(x => x.employe.toLowerCase().includes(q)) : d;
+  body.innerHTML = filtered.map(x =>
+    '<tr class="emp-row" onclick="showEmp(\'' + x.employe.replace(/'/g, "\\'") + '\')">'
+    + '<td><b>' + x.employe + '</b></td><td>' + x.jours_presents + '</td><td>' + x.taux_presence + '%</td>'
+    + '<td>' + x.avg_heures + 'h</td><td>' + x.total_ot + 'h</td><td>' + x.retards + '</td><td>' + x.avances + '</td>'
+    + '<td>' + scoreBadge(x.score) + '</td><td><button class="btn btn-sm btn-primary">Voir</button></td></tr>'
+  ).join('');
+}
+
+let modalEmpName = null;
+
+async function showEmp(name) {
+  modalEmpName = name;
+  document.getElementById('modalName').textContent = name;
+  const fields = document.getElementById('modalFields');
+  fields.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px"><div class="skeleton" style="height:80px"></div></div>';
+  document.getElementById('modal').classList.add('sel');
+  const [d, m] = await Promise.all([
+    g('/api/employee/' + encodeURIComponent(name)),
+    g('/api/employee/' + encodeURIComponent(name) + '/monthly')
+  ]);
+  if (d) {
+    fields.innerHTML = ''
+      + '<div class="modal-field"><label>Jours presents</label><div class="val">' + (d.total_jours || 0) + '</div></div>'
+      + '<div class="modal-field"><label>Heures moy</label><div class="val">' + (d.avg_heures || 0) + 'h</div></div>'
+      + '<div class="modal-field"><label>Total OT</label><div class="val orange">' + (d.total_ot || 0) + 'h</div></div>'
+      + '<div class="modal-field"><label>Retards</label><div class="val red">' + (d.retards || 0) + '</div></div>'
+      + '<div class="modal-field"><label>Arrivees matinales</label><div class="val green">' + (d.arrives_tot || 0) + '</div></div>';
+  }
+  if (m && m.length > 0 && typeof Chart !== 'undefined') {
+    if (chartModal) chartModal.destroy();
+    await new Promise(r => setTimeout(r, 50));
+    const ctx = document.getElementById('modalChart').getContext('2d');
+    chartModal = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: m.map(x => x.mois),
+        datasets: [
+          { label: 'Presence %', data: m.map(x => x.presence), backgroundColor: '#1a1a8a', borderRadius: 4, yAxisID: 'y' },
+          { label: 'Heures moy', data: m.map(x => x.avg_heures), backgroundColor: '#00C8FF', borderRadius: 4, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } },
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: v => v + '%' } },
+          y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { callback: v => v + 'h' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('sel');
+  if (chartModal) { chartModal.destroy(); chartModal = null; }
+}
+
+function toggleAdmin() {
+  document.getElementById('adminDropdown').classList.toggle('sel');
+  document.getElementById('btn-admin').classList.toggle('sel');
+}
+
+function closeAdminDropdown() {
+  document.getElementById('adminDropdown').classList.remove('sel');
+  document.getElementById('btn-admin').classList.remove('sel');
+}
+
+function adminAction(section) {
+  closeAdminDropdown();
+  document.getElementById('adminModal').classList.add('sel');
+  adminTab(section);
+}
+
+function closeAdmin() {
+  document.getElementById('adminModal').classList.remove('sel');
+}
+
+let adminCurrentTab = 'mapping';
+
+function adminTab(t) {
+  adminCurrentTab = t;
+  ['adm-mapping','adm-config','adm-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  document.getElementById('adm-' + t).classList.add('sel');
+  ['adm-section-mapping','adm-section-config','adm-section-test'].forEach(id => document.getElementById(id).classList.remove('sel'));
+  document.getElementById('adm-section-' + t).classList.add('sel');
+  if (t === 'mapping') loadMap();
+  else if (t === 'config') loadConfigTest();
+}
+
+async function loadMap() {
+  const [names, mappings, ranking] = await Promise.all([
+    g('/api/mappings/whatsapp-names'),
+    g('/api/mappings'),
+    g('/api/ranking')
+  ]);
+  if (!names) return;
+  const empList = ranking && ranking.length > 0 ? [...new Set(ranking.map(e => e.employe))] : [];
+  const mapByWA = {};
+  if (mappings) mappings.forEach(m => { mapByWA[m.whatsapp_name] = m.employee_name; });
+  document.getElementById('mapBody').innerHTML = names.length === 0
+    ? '<tr><td colspan="3" class="empty">Aucun contact WhatsApp</td></tr>'
+    : names.map(n => {
+      const mapped = mapByWA[n.whatsapp_name] || '';
+      const opts = '<option value="">--</option>'
+        + '<option value="' + n.whatsapp_name + '"' + (n.whatsapp_name === mapped ? ' selected' : '') + '>' + n.whatsapp_name + ' (identique)</option>'
+        + (empList.length > 0 ? '<option disabled>---</option>' : '')
+        + empList.filter(e => e !== n.whatsapp_name).map(e => '<option value="' + e + '"' + (e === mapped ? ' selected' : '') + '>' + e + '</option>').join('')
+        + (mapped && mapped !== n.whatsapp_name && !empList.includes(mapped) ? '<option value="' + mapped + '" selected>' + mapped + '</option>' : '');
+      return '<tr><td><b>' + n.whatsapp_name + '</b>' + (n.mapped ? ' <span style="color:var(--success);font-size:11px">ok</span>' : '') + '</td>'
+        + '<td><select id="sel-' + n.whatsapp_name.replace(/[^a-zA-Z0-9]/g, '_') + '">' + opts + '</select></td>'
+        + '<td><button class="btn btn-sm btn-primary" onclick="saveMap(\'' + n.whatsapp_name.replace(/'/g, "\\'") + '\')">Assigner</button></td></tr>';
+    }).join('');
+}
+
+async function saveMap(wa) {
+  const selId = 'sel-' + wa.replace(/[^a-zA-Z0-9]/g, '_');
+  const emp = document.getElementById(selId)?.value;
+  if (!emp) {
+    await fetch('/api/mappings/' + encodeURIComponent(wa), { method: 'DELETE' });
+  } else {
+    await fetch('/api/mappings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({whatsapp_name:wa, employee_name:emp}) });
+  }
+  const m = document.getElementById('mapMsg');
+  m.className = 'msg ok';
+  m.textContent = emp ? 'Assigne : ' + wa + ' \u2192 ' + emp : 'Mapping supprime pour ' + wa;
+  setTimeout(() => m.className = 'msg', 3000);
+  loadMap();
+}
+
+async function loadConfigTest() {
+  const d = await g('/api/config');
+  if (d) {
+    document.getElementById('shiftStartInput').value = d.shiftStart || '09:00';
+    document.getElementById('shiftEndInput').value = d.shiftEnd || '18:00';
+  }
+}
+
+async function saveConfig() {
+  const s = document.getElementById('shiftStartInput').value.trim();
+  const e = document.getElementById('shiftEndInput').value.trim();
+  const re = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const msg = document.getElementById('configMsg');
+  if (!re.test(s) || !re.test(e)) {
+    msg.className = 'msg err'; msg.textContent = 'Format invalide. Utilise HH:MM (ex: 09:00)'; return;
+  }
+  const r = await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({shiftStart:s, shiftEnd:e}) });
+  const d = await r.json();
+  msg.className = d.success ? 'msg ok' : 'msg err';
+  msg.textContent = d.success ? 'Sauvegarde OK (' + d.shiftStart + ' - ' + d.shiftEnd + ')' : 'Erreur';
+  setTimeout(() => msg.className = 'msg', 3000);
+}
+
+async function pt(a) {
+  const nom = document.getElementById('nom').value.trim();
+  const m = document.getElementById('tm');
+  if (!nom) { m.className = 'msg warn'; m.textContent = 'Veuillez entrer un nom'; return; }
+  const r = await fetch('/api/test/pointage', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nom,action:a}) });
+  const d = await r.json();
+  m.className = d.success ? 'msg ok' : 'msg err';
+  m.textContent = d.success ? a + ' enregistre pour ' + nom : 'Erreur';
+}
+
+async function sendReport(type) {
+  const btn = event.target;
+  const original = btn.innerHTML;
+  btn.innerHTML = '⏳ Envoi...';
+  btn.disabled = true;
+  const r = await fetch('/api/report/' + type);
+  const d = await r.json();
+  const m = document.getElementById('rm');
+  if (d.report) {
+    m.className = d.sent ? 'msg ok' : 'msg warn';
+    m.textContent = d.sent ? 'Rapport ' + type + ' envoye sur WhatsApp' : 'WhatsApp non connecte. Rapport genere mais non envoye.';
+    console.log(d.report);
+  } else {
+    m.className = 'msg err';
+    m.textContent = 'Erreur lors de la generation du rapport';
+  }
+  btn.innerHTML = original;
+  btn.disabled = false;
+  setTimeout(() => m.className = 'msg', 5000);
+}
+
+async function ca() {
+  if (!confirm('Supprimer toutes les donnees ?')) return;
+  const r = await fetch('/api/test/pointages', { method:'DELETE' });
+  const d = await r.json();
+  const m = document.getElementById('cm');
+  m.className = d.success ? 'msg ok' : 'msg err';
+  m.textContent = d.success ? d.supprime + ' entrees supprimees' : 'Erreur';
+}
+
+function show(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('sel'));
+  document.getElementById('page-' + p).classList.add('sel');
+  document.querySelectorAll('.nav-links button').forEach(el => el.classList.remove('sel'));
+  document.getElementById('btn-' + p).classList.add('sel');
+  closeAdminDropdown();
+  const fns = { dashboard: loadDash, performance: loadPerf, discipline: () => { discTab === 'late' ? loadLate() : loadEarly(); }, charge: loadCharge, analysis: loadAnalysis, employees: loadEmp };
+  if (fns[p]) fns[p]();
+}
+
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('adminDropdown');
+  const btn = document.getElementById('btn-admin');
+  if (dd.classList.contains('sel') && !btn.contains(e.target) && !dd.contains(e.target)) {
+    closeAdminDropdown();
+  }
+});
+
+document.getElementById('adminModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAdmin();
+});
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+loadDash();
+setInterval(() => {
+  const p = document.querySelector('.page.sel')?.id?.replace('page-','');
+  const fns = { dashboard: loadDash, performance: loadPerf, discipline: () => { discTab === 'late' ? loadLate() : loadEarly(); }, charge: loadCharge, analysis: loadAnalysis, employees: loadEmp };
+  if (fns[p]) fns[p]();
+}, 5000);
+</script>
+</body>
+</html>
